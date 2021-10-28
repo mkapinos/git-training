@@ -13,7 +13,7 @@ function loadCsv(filePath) {
   });
 }
 
-const codes = loadCsv('../data/kody.csv');
+const codes = loadCsv('../__data/kody.csv');
 
 console.log('Count of codes in database: ', codes.length);
 
