@@ -19,11 +19,102 @@ console.log('Count of codes in database: ', codes.length);
 
 // TODO odfiltruj miescowości z zadanego kodu
 
+// codes.length
+
+for (let i = 0; i < 3; i++) {
+  const item = codes[i];
+  console.log(item.id);
+}
+
+// for (let item of codes) {
+//   console.log(item);
+// }
+
+codes
+  .filter((item, index) => {
+    return index < 3;
+  })
+  .forEach(item => {
+    console.log(item);
+  });
+
+const numbers = [2, 4, 3, 6, 87];
+
+function checkPar(num) {
+  return num % 2 === 0;
+}
+
+const par = numbers.filter(checkPar);
+console.log(par);
+
 
 
 // TODO pokaż kody dla zadane miejscowości
+function checkCodeCityMielec(obj) {
+  return obj.city === 'Mielec';
+}
+// console.log(codes[0]);
+const mielecCodes = codes.filter(checkCodeCityMielec);
+console.log(mielecCodes);
 
+const checkMielec = function(obj) {
+  return obj.city === 'Mielec';
+}
+const checkMielec2 = (obj) => {
+  return obj.city === 'Mielec';
+};
 
+// console.log(codes[0]);
+const mielecCodes2 = codes.filter(checkMielec);
+console.log(mielecCodes2);
+
+const mielecCodes3 = codes.filter((obj) => {
+  return obj.city === 'Mielec';
+});
+console.log(mielecCodes3);
+
+const mielecCodes4 = codes.filter((obj) => obj.city === 'Mielec');
+console.log(mielecCodes4);
+
+function checkUniq(el, index, self) {
+  return self.indexOf(el) === index;
+}
+
+// przetworzyć na tablice unikalnych codow dla miasta
+const coodesList = codes
+    .filter((obj) => obj.city === 'Brzesko')
+    .filter((el, index) => index < 3)
+    .map((el => {
+      return el.code;
+    }))
+    .filter(checkUniq)
+  ;
+console.log('Brzesko', coodesList);
+
+function getCodes(list, city) {
+  return list
+    .filter((obj) => obj.city === city)
+    .map((el => {
+      return el.code;
+    }))
+    .filter(checkUniq)
+  ;
+}
+console.log('Wieliczka', getCodes(codes, 'Wieliczka'));
+console.log('Kraków', getCodes(codes, 'Kraków'));
+
+// rozszezenie classy array
+Array.prototype.getCodes = function(city) {
+  return this
+    .filter((obj) => obj.city === city)
+    .map((el => {
+      return el.code;
+    }))
+    .filter(checkUniq)
+  ;
+}
+console.log('Tarnów', codes.getCodes('Tarnów'));
+console.log('X', [{city: 'X', code: '123'}, {city: 'X', code: '123'}].getCodes('X'));
 
 // TODO pokaż top 10 z największą ilością unikalnych kodów
 const groupByCodes = {};
@@ -49,8 +140,11 @@ Object.values(groupByCodes)
     console.log(`${item.index + 1}. ${item.city}: ${item.count}`);
   });
 
-// TODO stwórz drzewo wojewodzto / miejsocwość / kody z automatycznym obliczeniem ile w danym węźle jest unikalnych kodów
 
+
+
+  
+// TODO stwórz drzewo wojewodzto / miejsocwość / kody z automatycznym obliczeniem ile w danym węźle jest unikalnych kodów
 
 /*
  TODO wykorzystując wcześniej przygotowane drzewo wyświetl statystyki w następujący sposób:
