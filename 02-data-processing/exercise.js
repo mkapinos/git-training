@@ -1,40 +1,46 @@
-const fs = require('fs');
-const { setMaxListeners } = require('process');
+const csv = require('./csv');
 
-function loadCsv(filePath) {
-  const data = fs.readFileSync(filePath, 'utf8');
-  const list = data.split('\n').map(item => item.trim());
-  const attribs = list.shift().split(';');
-  return list.filter(item => !!item).map(item => {
-    const codeItem = {};
-    item.split(';').forEach((value, index) => {
-      codeItem[attribs[index]] = value;
-    });
-    return codeItem;
-  });
-}
-
-const codes = loadCsv('../__data/kody.csv');
+const codes = csv.load('../__data/kody.csv');
 
 console.log('Count of codes in database: ', codes.length);
 
-// wyszukaj miast zaczunających się na jakiś ciąg znaków
+//////////////////////////// ARRAY //////////////////////////////////
+
+// get part of array
 
 
+// pop
 
 
-//console.log(ExampleCity);
+// delete form array
 
 
-// wyszukaj kodów zaczunających się ...
+// add to array
 
 
-//console.log(codeCity);
+// filtering
 
 
-// wylistuj ilość miast w wojewudztwie
+// maping
 
 
-//console.log(exampleRegion);
+// reducing
 
-// wyswielt wszystkie miasta ktore nie są unikalne
+// join
+
+//////////////////////////// STRING //////////////////////////////////
+
+// to array
+
+
+// split
+
+
+// find in
+
+
+// find pos of text
+
+
+// replace
+
