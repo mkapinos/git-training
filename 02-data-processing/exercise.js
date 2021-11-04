@@ -7,7 +7,7 @@ console.log('Count of codes in database: ', codes.length);
 //////////////////////////// ARRAY //////////////////////////////////
 
 // get part of array
-
+console.log(codes[0])
 
 
 // for (let i = 0; i<10; i++){
