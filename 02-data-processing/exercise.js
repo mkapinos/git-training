@@ -19,6 +19,12 @@ const codes = loadCsv('../__data/kody.csv');
 console.log('Count of codes in database: ', codes.length);
 
 // wyszukaj miast zaczunających się na jakiś ciąg znaków
+function checkLetters(obj){
+  return obj.city === "Kr";
+} 
+const letters = codes.filter(checkLetters);
+console.log(checkLetters());
+
 
 
 
