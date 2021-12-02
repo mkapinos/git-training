@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Kamila</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <ul>
+      <li><a href="index.html">Author</a></li>
+      <li><a class="active" href="data.html">Data</a></li>
+      <li><a href="internet.html">Internet</a></li>
+    </ul>
+</header>
+
+<h2>Description</h2>
+
+<p>
+  There is some data in table below.
+  We can see there main information about people's apps: name, version, 
+  if they are active, price and when they were updated.
+  There are also authors' contact details, their id, url.
+
+</p>
+
+<table id="data">
+  <thead>
+  <tr>
+    <th>Id</th>
+    <th>App</th>
+    <th>Version</th>
+    <th>Email</th>
+    <th>Author</th>
+    <th>WWW</th>
+    <th>Active</th>
+    <th>Price</th>
+    <th>Updated</th>
+  </tr>
+  </thead>
+  <tbody id="tableBody">
+
+  </tbody>
+</table>
+<table id="files">
+  <tr>
+    <th>Json</th>
+    <th>CSV</th>
+    <th>XML</th>
+  </tr>
+  <tr>
+    <td><ul class = "datades">
+      <li>JavaScript Object Notation</li>
+      <li>text format</li>
+      <li>self describing</li>
+      <li>easy to understand</li>
+      <li>hierarchical</li>
+      <li>storing and transporting data</li>
+      <li>doesn't use end tag</li>
+      <li>language independent</li>
+      <li>written in JavaScript object notation</li>
+    </ul></td>
+    <td><ul class = "datades">
+      <li>Comma Separated Values</li>
+      <li>text format</li>
+      <li>refers to the way the data is structured (or formatted)</li>
+      <li>moving data between two (or more) places</li>
+      <li>backing up Data</li>
+      <li>viewing Data</li>
+      <li>markup language</li>
+    </ul></td>
+    <td><ul class = "datades">
+      <li>eXtensible Markup Language</li>
+      <li>text format</li>
+      <li>self describing</li>
+      <li>easy to understand</li>
+      <li>hierarchical</li>
+      <li>storing and transporting data</li>
+      <li>markup language</li>
+    </ul></td>
+  </tr>
+  <tr>
+    <td class="links"><a class="button" href="dane/apps-database.json" download="apps_database.json" target="_blank">json</a></td>
+    <td class="links"><a class="button" href="dane/apps-database.csv" download="apps_database.csv" target="_blank">CSV</a></td>
+    <td class="links"><a class="button" href="dane/dataset.xml" download="dataset.xml" target="_blank">XML</a></td>
+  </tr>
+</table>
+
+
+<script>
+   fetch('dane/apps-database.json')
+    .then(respone => respone.json())
+    .then(dataJson => {
+     
+      const list = dataJson.slice(0, 10);
+
+      let html = "";
+      list.forEach(item => {
+        html += `<tr>
+          <td>` + item.id + `</td>
+          <td>${item.app_name}</td>
+          <td>${item.app_version}</td>
+          <td><a class="button" href="mailto:${item.author_email}">@</a></td>
+          <td nowrap>${item.author_first_name} ${item.author_last_name}</td>
+          <td><a class="button" href="${item.url}">www</a></td>
+          <td> ${item.active} </td>
+          <td> ${item.price}</td>
+          <td>${item.updated_at}</td>
+        </tr>`;
+      });
+        
+      document.getElementById('tableBody').innerHTML = html;
+
+   });
+   console.log(2);
+
+    </script>
+
+</body>
+</html>
+  

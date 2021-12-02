@@ -1,0 +1,266 @@
+body {
+    background-color: #D1B7B1;
+    padding: 25px;
+    margin: 3%;
+    padding-top: 2.5px;
+}
+header {
+  position: fixed;
+  top: 0;
+  background: #868F7B;
+  border-bottom-right-radius: 25px;
+  width: 100%;
+  left: 0;
+  right: 0;
+  border-bottom-left-radius: 25px;
+}
+header ul {
+  display: flex;  
+  justify-content: space-between;
+  padding: 10px 50px;
+  margin: 0;
+}
+
+header ul li {
+  display: block;
+
+}
+header ul li a {
+  color: white;
+  text-decoration: none;
+  line-height: 40px;
+}
+header ul li a:hover, header ul li a.active {
+  font-weight: bold;
+  font-size: 30px;
+}
+header ul li a.active {
+  color: #BE908D;
+}
+
+h2{
+  display: block;
+  margin-top: 80px;
+  font-size: 30px;
+}
+
+ h1{
+    font-family: "Monaco", monospace;
+    color: #6E7565;
+    border: 10px solid #ddd;
+    text-align: center;
+  } 
+h2, h3{
+    font-family: "Monaco", monospace;
+    color: #6E7565;
+}
+.sign{
+  color: white;
+  white-space: nowrap;
+}
+h3.picture{
+  color: white;
+  white-space: nowrap;
+}
+.what{
+    background: #868F7B;
+    width: 50%;
+    border-radius: 25px;
+    padding: 10px;
+    text-align: center;
+    color: white;
+}
+#margin{
+    margin-top: 40px;
+    margin-bottom: 25px;
+}
+p {
+    font-family: "Monaco", monospace;
+    color: rgb(255, 255, 255);
+    font-size: 22px;
+    text-align: justify;
+  }
+
+a.button {
+  background-color: #BE908D;
+  color: white;
+  border-radius: 10px;
+  font-family: "Monaco", monospace;
+  padding: 2px;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+a.button:hover {
+  background-color: #CDA8A5;
+}
+
+a.button:active {
+  background-color: black;
+}
+
+ul,ol{
+    font-family: "Monaco", monospace;
+    color: rgb(255, 255, 255);
+    font-size: 21px;
+} 
+.datades{
+  text-align: left;
+}
+
+table, td {
+  background-color: #6E7565;
+  font-family: "Monaco", monospace;
+  border: 1px solid #474545; 
+  border-radius: 15px;
+  color: white;
+  font-size: 20px;
+}
+table#expt, td {
+  padding: 10px; 
+}
+
+table#data {
+  width: 100%;
+  padding: 5px;
+}
+table#data, table#data td  {
+  font-size: 14px;
+  padding: 5px;
+}
+.links {
+  text-align: center;
+}
+
+table#half {
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  background: none;
+}
+.without-border-and-bg {
+  background: none;
+  border: 0;
+}
+table#half th {
+  border: none;
+}
+table#internet td {
+  padding: 20px;
+  border: none;
+  text-align: justify;
+}
+table#internet {
+  width: 100%;
+  border: none;
+  border-radius: 20px;
+}
+table#internet th {
+  border: none;
+}
+td#amazon {
+  background: #D1B7B1;
+}
+
+table#images {
+  width: 100%;
+  border: none;
+  border-radius: 20px;
+}
+table#images th {
+  border: none;
+}
+table#images td {
+  padding: 20px;
+  border: none;
+  text-align: center;
+  width: 50%;
+}
+table#images td img {
+  border-radius: 20px;
+  width: 100%;
+  border: 1px solid transparent;
+}
+
+th{
+    background-color: #BE908D;
+    font-family: "Monaco", monospace;
+    border: 1px solid rgb(59, 58, 58);
+    border-radius: 25px;
+    color: #6E7565;
+    font-size: 25px;
+}
+#data{
+  font-family: "Monaco", monospace;
+    border: 1px solid #474545;
+    color: white;
+    font-size: 15px;
+    text-align: center;
+}
+
+#pictures, #search{
+    background: white;
+    width: 100%;
+    border-radius: 25%;
+    font-family: "Monaco", monospace;
+    color: #474545;
+    border: 10px solid #ddd;
+    text-align: center;
+}
+
+.picture{
+    text-align: auto;
+    background-color: #6E7565;
+    border-radius: 20px;
+    padding: 3px;
+}
+.picture img{
+    border-radius: 25px;
+}
+#que{
+  font-family: "Monaco", monospace;
+    color: #6E7565;
+    font-size: 25px;
+    text-align: left;
+} 
+#k{
+  color: #474545;
+  padding: 8px;
+  border-radius: 25px;
+  font-family: "Monaco";
+  background-color: #868F7B;
+  font-size: 20px;
+  border: 1px solid transparent;
+} 
+#searchButton{
+  background-color: #6E7565;
+  color: white;
+  font-size: 20px;
+  border-radius: 25px;
+  font-family: "Monaco", monospace;
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+#searchButton:hover {
+  background-color: #868F7B;
+}
+
+#searchButton:active {
+  background-color: black;
+}  
+
+#files {
+  width: 100%;
+}
+#files td {
+  width: 33%;
+  vertical-align: top;
+}
+
+/* .square {
+  background-image: url(shopping.jpeg);
+  background-position: center center;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+} */
