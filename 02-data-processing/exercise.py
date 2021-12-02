@@ -16,8 +16,11 @@ codes = csv.load('/Users/kamila/dev/git-training/__data/kody.csv')
 #     print(codes[i])
 # print(codes[0]["city"])
 
+#for i in range (len(codes)):
+#     print(codes[i])
+
 # print(len(codes[2:4]))
-# print(len(codes[:4]))
+print(len(codes[:4]))
 # print(len(codes[4:]))
 # print(len(codes[4:-5]))
 
