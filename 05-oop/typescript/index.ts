@@ -1,4 +1,4 @@
-const data = [
+const data: UserData[] = [
   {
     "id": 1,
     "first_name": "Dennison",
@@ -61,6 +61,21 @@ const data = [
   }
 ];
 
+interface OperationData {
+  id: number;
+  date: string;
+  amount: number;
+}
+interface UserData {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  gender: string;
+  yearOfBorn: number;
+  operations: OperationData[]
+}
+
 class User {
   id: number;
   firstName: string;
@@ -69,7 +84,7 @@ class User {
   gender: string;
   yearOfBorn: number;
 
-  constructor(data: any) {
+  constructor(data: UserData) {
     this.id = data.id;
     this.firstName = data.first_name;
     this.lastName = data.last_name;
@@ -83,11 +98,11 @@ class UserAccount {
   userId: number;
   operations: Operation[];
 
-  private createdAt;
+  private createdAt: Date = new Date();
 
-  constructor(data: any) {
+  constructor(data: UserData) {
     this.userId = data.id;
-    this.operations = data.operations.map(item => new Operation(item));
+    this.operations = data.operations.map((item) => new Operation(item));
   }
 }
 
@@ -95,7 +110,7 @@ class Operation {
   id: number;
   date: string;
   amount: number;
-  constructor(data: any) {
+  constructor(data: OperationData) {
     this.id = data.id;
     this.date = data.date;
     this.amount = data.amount;
@@ -116,10 +131,10 @@ interface AutomateVehicle {
 }
 
 abstract class Vehicle {
-  abstract handlebar;
-  wheels: number;
+  abstract handlebar: string;
+  wheels: number = 4;
 
-  abstract turnOnLights();
+  abstract turnOnLights(): string;
 
   goAhead() {
     return 'goAhead';
@@ -128,8 +143,8 @@ abstract class Vehicle {
 }
 
 class Car extends Vehicle {
-  handlebar: 'left' | 'right';
-  clutch: boolean;
+  handlebar: 'left' | 'right' = 'left';
+  clutch: boolean = false;
 
   turnOnLights() {
     return 'CarTurnOnLights'
@@ -138,7 +153,7 @@ class Car extends Vehicle {
 }
 
 class ElectricCar extends Car implements ElectricVehicle {
-  private battery: number;
+  private battery: number = 100;
 
   checkBattery(): number {
     return this.battery;
@@ -146,8 +161,8 @@ class ElectricCar extends Car implements ElectricVehicle {
 }
 
 class Tractor extends Vehicle {
-  handlebar: 'center';
-  lift: boolean;
+  handlebar: 'center' = 'center';
+  lift: boolean = true;
 
   turnOnLights() {
     return 'TractorTurnOnLights'
@@ -156,9 +171,9 @@ class Tractor extends Vehicle {
 
 class ElectricTractor extends Tractor implements ElectricVehicle, AutomateVehicle {
 
-  x: boolean;
+  x: boolean = false;
 
-  private lion: number;
+  private lion: number = 1;
 
   checkBattery(): number {
     return this.lion;
@@ -183,7 +198,6 @@ function checkBattery(object: ElectricVehicle) {
 checkBattery(eCar);
 checkBattery(eTractor);
 
-// ERROR checkBattery(tractor);
 
 
 
