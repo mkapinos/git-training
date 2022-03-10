@@ -1,4 +1,4 @@
-const data = require("./data.json");
+const data = require("../data.json");
 // console.log({data});
 
 // sprawdź ile ludzie mają na koncie kasy
