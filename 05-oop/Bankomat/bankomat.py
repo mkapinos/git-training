@@ -52,14 +52,16 @@ class CashMashine():
     
 newbank = BankProvider()
 newCard = Card(1234568907654,"23/8", "Lama", "Kama", "19.08.2023" )
-
+newCard2 = Card(1234568907654,"23/8", "Lama", "Kama", "19.08.2023" )
 newBankomat = CashMashine(10000000000000, newbank)
 print(newBankomat.insertCard(newCard))
+
 print(newBankomat.insertPin(1234))
 print(newBankomat.insertAmount(739052356))
 
 print(newBankomat.payOut())
 print("Thank you")
+print(newBankomat.insertCard(newCard2))
 
 
         
