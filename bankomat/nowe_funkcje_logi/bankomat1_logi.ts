@@ -1,4 +1,4 @@
-import users_data = require('./users_data.json');
+import users_data = require('./users_data_logi.json');
 const data: userData[] = users_data
 // console.log(JSON.stringify(users_data[0]))
 // console.log(data)
