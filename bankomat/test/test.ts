@@ -28,15 +28,15 @@ var hmm = pre_data.map((item) => item)
 console.log(hmm)
 var newOperation = {id:10,date:"aa",amount:213}
 
-
+fs.writeFile()
 // var obj ={id:10,date:"aa",amount:213}
 // file.operations = obj
 file = hmm
 
 fs.writeFile(fileName, JSON.stringify(file), function writeJSON(err:any) {
-  if (err) return console.log(err);
-  console.log(JSON.stringify(file));
-  console.log('writing to ' + fileName);
+  // if (err) return console.log(err);
+  // console.log(JSON.stringify(file));
+  // console.log('writing to ' + fileName);
 });
 
 

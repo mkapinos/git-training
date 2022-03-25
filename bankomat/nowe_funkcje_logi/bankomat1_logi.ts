@@ -1,11 +1,18 @@
-import users_data = require('./users_data_logi.json');
+const fs = require('fs');
+
+import users_data = require('./temporary_log.json');
 const data: userData[] = users_data
-// console.log(JSON.stringify(users_data[0]))
-// console.log(data)
+
+
+function writeToJson(a:any) {fs.writeFile('./temporary_log.json', JSON.stringify(a), (err:any) => {
+    if (err){
+        console.log(err)
+    }
+})}
 
 interface operationData {
     id: number;
-    date: string;
+    date: any;
     amount: number;
   }
 
@@ -46,7 +53,7 @@ interface userData {
 
   class userAccount {
     userId: number;
-    // operations: Operation[];
+    operations: operation[];
     saldo: number;
     firstName: string;
     lastName: string;
@@ -54,7 +61,7 @@ interface userData {
   
     constructor(data: userData) {
       this.userId = data.id;
-    //   this.operations = data.operations.map((item) => new operation(item));
+      this.operations = data.operations.map((item) => new operation(item));
       this.saldo = data.operations.reduce((prev, curr) => {
         prev += curr.amount; 
         return prev
@@ -74,16 +81,16 @@ interface userData {
       }
   }
 
-//   class operation {
-//     id: number;
-//     date: string;
-//     amount: number;
-//     constructor(data: operationData) {
-//       this.id = data.id;
-//       this.date = data.date;
-//       this.amount = data.amount;
-//     }
-//   }
+  class operation {
+    id: number;
+    date: Date;
+    amount: number;
+    constructor(data: operationData) {
+      this.id = data.id;
+      this.date = data.date;
+      this.amount = data.amount;
+    }
+  }
 
   class Card {
     id: number
@@ -147,8 +154,13 @@ class BankProvider {
             if(el.id === cardNumber){
                     if(el.pin === pin){
                         if(item.saldo >= amount){
-                            
+                            console.log(item.saldo)
                             a = true
+                            let operation1:operationData = {id:item.operations.length+1, date:new Date, amount:-amount} //okropnie rozwiazane bo przyjałem że indeksy operacji zaczynają się od 1
+
+                            data[item.userId-1].operations.push(new operation(operation1)) //rozwiazane okropnie bo przyjalem ze Id urzytkownika odpowiada jego miejscu w tabeli
+                            writeToJson(data)
+                            
                             // return true
                         }
                         else console.log(`niewystarczajace srodki \n na koncie: ${item.saldo} \n do wyplacenia: ${amount}` )
