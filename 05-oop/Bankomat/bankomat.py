@@ -1,3 +1,5 @@
+import json
+
 class Card():
     def __init__(self, number, cvs, name, surname, expiryDate):
         self.number = number
@@ -7,8 +9,14 @@ class Card():
         self.expiryDate = expiryDate
 
 class BankProvider():
+
     def checkPin(self, number, pin):
-        return True
+        with open("people.json") as file:
+            clients = json.load(file)
+            for person in clients:
+                if person["PIN"] == self.__pin:
+                    return True
+            return False
     
     def payOut(self, number, pin, amount):
         return True
@@ -49,19 +57,22 @@ class CashMashine():
         self.__bankProvider.payOut(self.__inputedCard, self.__inputedPin, self.__inputedAmount)
         return self.__inputedAmount
     
-    
-newbank = BankProvider()
-newCard = Card(1234568907654,"23/8", "Lama", "Kama", "19.08.2023" )
-newCard2 = Card(1234568907654,"23/8", "Lama", "Kama", "19.08.2023" )
+with open("people.json") as file:
+    clients = json.load(file)
+    for person in clients:  
+        newbank = BankProvider()
+        newCard = Card(person["CardNumber"], "8/12", person["name"], person["surname"], "12.02.10")
+        break
+
 newBankomat = CashMashine(10000000000000, newbank)
 print(newBankomat.insertCard(newCard))
 
-print(newBankomat.insertPin(1234))
+print(newBankomat.insertPin(1880))
 print(newBankomat.insertAmount(739052356))
 
 print(newBankomat.payOut())
 print("Thank you")
-print(newBankomat.insertCard(newCard2))
+
 
 
         
