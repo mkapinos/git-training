@@ -160,7 +160,7 @@ class BankProvider {
 
                             data[item.userId-1].operations.push(new operation(operation1)) //rozwiazane okropnie bo przyjalem ze Id urzytkownika odpowiada jego miejscu w tabeli
                             writeToJson(data)
-                            
+                            this.accountsData = data.map((item:userData) => new userAccount(item))
                             // return true
                         }
                         else console.log(`niewystarczajace srodki \n na koncie: ${item.saldo} \n do wyplacenia: ${amount}` )
@@ -180,7 +180,7 @@ class BankProvider {
         this.accountsData.map((item:userAccount) => item.assignedCards.map((el:assignedCardsData) => {
             if(el.id === cardNumber){
                     if(el.pin === pin){
-                        console.log(`You have ${item.saldo} money on your bank account`)
+                        console.log(`You have ${item.saldo} money in your bank account`)
                         a = true
 
                     }
@@ -244,7 +244,7 @@ class ChasMachine {
                     this.stateOfMoney -= this.imputedAmount
                     console.log(`You wirdawed ${this.imputedAmount}`)
             }
-            else console.log(`you must first insert amout of money you want withdraw`)
+            
         }
         else console.log(`you must first log in`)
     }
@@ -271,7 +271,8 @@ class ChasMachine {
             if(this.inputedCard?.id && this.inputedPin){
                 return this.bankProvider.checkeBalanceFromBank(this.inputedCard.id, this.inputedPin)
             }
-        } //niedokonczone - bledy nie obsluzone
+        }
+        else console.log(`you must first insert amout of money you want withdraw`)
     }
     
     private checkAtmStatus(){
@@ -302,9 +303,9 @@ atm.insertPin(1234)
 
 atm.logIn()
 
-atm.insertAmount(100)
-
 atm.checkBalance()
+
+atm.insertAmount(199)
 
 atm.payOut()
 
