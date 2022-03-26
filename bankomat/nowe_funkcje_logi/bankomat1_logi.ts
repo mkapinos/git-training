@@ -154,7 +154,7 @@ class BankProvider {
             if(el.id === cardNumber){
                     if(el.pin === pin){
                         if(item.saldo >= amount){
-                            console.log(item.saldo)
+                            // console.log(item.saldo)
                             a = true
                             let operation1:operationData = {id:item.operations.length+1, date:new Date, amount:-amount} //okropnie rozwiazane bo przyjałem że indeksy operacji zaczynają się od 1
 
@@ -164,6 +164,25 @@ class BankProvider {
                             // return true
                         }
                         else console.log(`niewystarczajace srodki \n na koncie: ${item.saldo} \n do wyplacenia: ${amount}` )
+                    }
+                    else console.log("invalid pin")
+                }
+            // else if - można dodać funkcjonalnośc która sprawdza czy numer karty w ogle isntnieje ale nwm jak
+            }))
+            return a
+    }
+
+    public checkeBalanceFromBank(
+        cardNumber: number,
+        pin: number
+    ){
+        let a:boolean = false
+        this.accountsData.map((item:userAccount) => item.assignedCards.map((el:assignedCardsData) => {
+            if(el.id === cardNumber){
+                    if(el.pin === pin){
+                        console.log(`You have ${item.saldo} money on your bank account`)
+                        a = true
+
                     }
                     else console.log("invalid pin")
                 }
@@ -246,6 +265,14 @@ class ChasMachine {
         }
         else console.log(`wrong maintenence code`)
     }
+
+    public checkBalance(){
+        if(this.logingCode === "loggingCode"){
+            if(this.inputedCard?.id && this.inputedPin){
+                return this.bankProvider.checkeBalanceFromBank(this.inputedCard.id, this.inputedPin)
+            }
+        } //niedokonczone - bledy nie obsluzone
+    }
     
     private checkAtmStatus(){
         return console.log(`money left in casbox ${this.stateOfMoney}`)
@@ -277,9 +304,13 @@ atm.logIn()
 
 atm.insertAmount(100)
 
+atm.checkBalance()
+
 atm.payOut()
 
-atm.maintenance(12345, 1)
+atm.checkBalance()
+
+// atm.maintenance(12345, 1)
 
 // atm.checkMoneyInATM()
 
