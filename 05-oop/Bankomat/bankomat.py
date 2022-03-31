@@ -11,7 +11,7 @@ class Card():
 class BankProvider():
 
     def checkPin(self, number, pin):
-        with open("people.json") as file:
+        with open("../people.json") as file:
             clients = json.load(file)
             for person in clients:
                 if person["PIN"] == self.__pin:
@@ -55,6 +55,7 @@ class CashMashine():
     
     def payOut(self):
         self.__bankProvider.payOut(self.__inputedCard, self.__inputedPin, self.__inputedAmount)
+
         return self.__inputedAmount
     
 with open("people.json") as file:
