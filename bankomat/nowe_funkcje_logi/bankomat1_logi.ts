@@ -1,35 +1,35 @@
 const fs = require('fs');
 
-import users_data = require('./temporary_log.json');
-const data: userData[] = users_data
+function readData() {
+    return require('./temporary_log.json');
+}
 
-
-function writeToJson(a:any) {fs.writeFile('./temporary_log.json', JSON.stringify(a), (err:any) => {
+function writeData(a:any) {fs.writeFile('./temporary_log.json', JSON.stringify(a), (err:any) => {
     if (err){
         console.log(err)
     }
 })}
 
-interface operationData {
+interface OperationData {
     id: number;
     date: any;
     amount: number;
   }
 
-interface assignedCardsData{
+interface AssignedCardsData{
     id: number;
     pin: number;
   }
 
-interface userData {
+interface UserData {
     id: number;
     first_name: string;
     last_name: string;
     email: string;
     gender: string;
     yearOfBorn: number;
-    operations: operationData[];
-    assignedCards: assignedCardsData[];
+    operations: OperationData[];
+    assignedCards: AssignedCardsData[];
   }
 
   
@@ -51,41 +51,43 @@ interface userData {
 //     }
 //   }
 
-  class userAccount {
+  class UserAccount {
     userId: number;
-    operations: operation[];
-    saldo: number;
+    operations: Operation[];
     firstName: string;
     lastName: string;
-    assignedCards: assignedCards[]
+    assignedCards: AssignedCards[]
   
-    constructor(data: userData) {
+    constructor(data: UserData) {
       this.userId = data.id;
-      this.operations = data.operations.map((item) => new operation(item));
-      this.saldo = data.operations.reduce((prev, curr) => {
-        prev += curr.amount; 
-        return prev
-    }, 0)
+      this.operations = data.operations.map((item) => new Operation(item));
       this.firstName = data.first_name;
       this.lastName = data.last_name;
-      this.assignedCards = data.assignedCards.map((item) => new assignedCards(item));
+      this.assignedCards = data.assignedCards.map((item) => new AssignedCards(item));
+    }
+
+    getBalance() {
+        return this.operations.reduce((prev, curr) => {
+            prev += curr.amount;
+            return prev
+        }, 0)
     }
   }
 
-  class assignedCards {
+  class AssignedCards {
       id: number;
       pin: number;
-      constructor(data: assignedCardsData){
+      constructor(data: AssignedCardsData){
           this.id = data.id
           this.pin = data.pin
       }
   }
 
-  class operation {
+  class Operation {
     id: number;
     date: Date;
     amount: number;
-    constructor(data: operationData) {
+    constructor(data: OperationData) {
       this.id = data.id;
       this.date = data.date;
       this.amount = data.amount;
@@ -113,35 +115,39 @@ interface userData {
 }
 
 class BankProvider {
-    accountsData: userAccount[] 
-    
 
-    constructor(data: any){
-        // this.accountsData = data.foreach((item:number) => new userAccount(data[item]))
-        // this.accountsData = data.map((item:userData) => new userAccount(item))
-        // this.accountsData = data
-        this.accountsData = data.map((item:userData) => new userAccount(item))
+    private static instance: BankProvider;
+
+    private accountsData!: UserAccount[]
+    private data: UserData[];
+
+    public static getInstance(): BankProvider {
+        if (!BankProvider.instance) {
+            BankProvider.instance = new BankProvider();
+        }
+        return BankProvider.instance;
     }
 
+    private constructor(){
+        this.data = readData();
+        this.refreshUsersAccounts();
+    }
 
-    public chcekPin(
-        
+    public checkPin(
         cardNumber: number,
         pin: number
-    ){
-        let a:boolean = false
-        this.accountsData.map((item:userAccount) => item.assignedCards.map((el:assignedCards) => {
-            if(el.id === cardNumber){
-                    if(el.pin === pin){
-                        a = true
-                    }
-                    else console.log("invalid pin")
-            }
-            // else if - można dodać funkcjonalnośc która sprawdza czy numer karty w ogle isntnieje ale nwm jak
-        }))
-        return a
+    ): boolean {
+        return !!this.findAccount(cardNumber, pin);
+    }
 
-
+    private findAccount(cardNumber: number,
+                        pin: number): UserAccount | undefined {
+        return this.accountsData.find(item => {
+            return item.assignedCards.find(card => card.id === cardNumber && card.pin === pin)
+        });
+    }
+    private findAccountData(id: number): UserData | undefined {
+        return this.data.find(item => item.id === id);
     }
 
     public payOut(
@@ -149,70 +155,71 @@ class BankProvider {
         pin: number,
         amount: number
     ){
-        let a:boolean = false
-        this.accountsData.map((item:userAccount) => item.assignedCards.map((el:assignedCardsData) => {
-            if(el.id === cardNumber){
-                    if(el.pin === pin){
-                        if(item.saldo >= amount){
-                            // console.log(item.saldo)
-                            a = true
-                            let operation1:operationData = {id:item.operations.length+1, date:new Date, amount:-amount} //okropnie rozwiazane bo przyjałem że indeksy operacji zaczynają się od 1
+        const account = this.findAccount(cardNumber, pin);
+        if (account) {
+            if(account.getBalance() >= amount){
 
-                            data[item.userId-1].operations.push(new operation(operation1)) //rozwiazane okropnie bo przyjalem ze Id urzytkownika odpowiada jego miejscu w tabeli
-                            writeToJson(data)
-                            this.accountsData = data.map((item:userData) => new userAccount(item))
-                            // return true
-                        }
-                        else console.log(`niewystarczajace srodki \n na koncie: ${item.saldo} \n do wyplacenia: ${amount}` )
-                    }
-                    else console.log("invalid pin")
+                let operationData: OperationData = {id: account.operations.length+1, date:new Date, amount:-amount}
+
+                account.operations.push(new Operation(operationData))
+
+                const accountData = this.findAccountData(account.userId);
+                if (accountData) {
+                    accountData.operations.push(operationData);
+                    writeData(this.data)
                 }
-            // else if - można dodać funkcjonalnośc która sprawdza czy numer karty w ogle isntnieje ale nwm jak
-            }))
-            return a
+
+                return true
+            } else {
+                console.log(`niewystarczajace srodki \n na koncie: ${account.getBalance()} \n do wyplacenia: ${amount}` )
+            }
+        } else {
+            console.log("invalid authorisation")
+        }
+
+        return false;
     }
 
     public checkeBalanceFromBank(
         cardNumber: number,
         pin: number
-    ){
-        let a:boolean = false
-        this.accountsData.map((item:userAccount) => item.assignedCards.map((el:assignedCardsData) => {
-            if(el.id === cardNumber){
-                    if(el.pin === pin){
-                        console.log(`You have ${item.saldo} money in your bank account`)
-                        a = true
+    ): number | null {
+        const account = this.findAccount(cardNumber, pin);
+        if (account) {
+            return account.getBalance();
+        } else {
+            console.log("invalid authorisation")
+        }
+        return null;
+    }
 
-                    }
-                    else console.log("invalid pin")
-                }
-            // else if - można dodać funkcjonalnośc która sprawdza czy numer karty w ogle isntnieje ale nwm jak
-            }))
-            return a
+    private refreshUsersAccounts() {
+        this.accountsData = this.data.map((item:UserData) => new UserAccount(item));
     }
 }
 
-class ChasMachine {
+class CashMachine {
     private bankProvider: BankProvider
     private stateOfMoney: number
     private inputedCard?: Card
     private inputedPin?: number
     private imputedAmount?: number
-    private logingCode?: string
+    private isLogged = false;
     private maintenanceLogingCode: number
 
-    constructor (a:number, data: any, maintenanceCode:number){
-        this.stateOfMoney = a
-        this.bankProvider = new BankProvider(data)
+    constructor (stateOfMoney:number, maintenanceCode:number){
+        this.stateOfMoney = stateOfMoney
+        this.bankProvider = BankProvider.getInstance()
         this.maintenanceLogingCode = maintenanceCode
     }
 
 
     public insertCard(card: Card){
         if(this.inputedCard){
-        return console.log("Error")
+            return console.log("Error")
+        } else {
+            this.inputedCard = card
         }
-        else this.inputedCard = card
     }
 
     public insertPin(pin: number){
@@ -222,13 +229,12 @@ class ChasMachine {
     public logIn(){
         if (this.checkPinInBank()){
             console.log("you are succesfully logged")
-            this.logingCode = "loggingCode"
+            this.isLogged = true
         }
-         
     }
 
     public insertAmount(amount: number){
-        if (this.logingCode === "loggingCode"){
+        if (this.isLogged){
                 if(this.stateOfMoney >=amount ){
                 this.imputedAmount = amount
                 console.log(`cash to withrdaw: ${amount}`)
@@ -239,7 +245,7 @@ class ChasMachine {
     }
 
     public payOut(){
-        if(this.logingCode === "loggingCode"){
+        if(this.isLogged){
             if (this.imputedAmount && this.payOutFromBank()){
                     this.stateOfMoney -= this.imputedAmount
                     console.log(`You wirdawed ${this.imputedAmount}`)
@@ -267,12 +273,18 @@ class ChasMachine {
     }
 
     public checkBalance(){
-        if(this.logingCode === "loggingCode"){
+        if(this.isLogged){
             if(this.inputedCard?.id && this.inputedPin){
-                return this.bankProvider.checkeBalanceFromBank(this.inputedCard.id, this.inputedPin)
+                const saldo = this.bankProvider.checkeBalanceFromBank(this.inputedCard.id, this.inputedPin)
+                if (saldo === null) {
+                    console.log(`Unknown saldo in your bank account`)
+                } else {
+                    console.log(`You have ${saldo} money in your bank account`)
+                }
             }
+        } else {
+            console.log(`you must first insert amout of money you want withdraw`)
         }
-        else console.log(`you must first insert amout of money you want withdraw`)
     }
     
     private checkAtmStatus(){
@@ -281,7 +293,9 @@ class ChasMachine {
 
     private checkPinInBank(){
         if(this.inputedCard?.id && this.inputedPin){
-        return this.bankProvider.chcekPin(this.inputedCard.id, this.inputedPin)
+            return this.bankProvider.checkPin(this.inputedCard.id, this.inputedPin)
+        } else {
+            console.log(`you must first insert amout of money you want withdraw`)
         }
     }
 
@@ -290,10 +304,9 @@ class ChasMachine {
         return this.bankProvider.payOut(this.inputedCard.id, this.inputedPin, this.imputedAmount)
         }
     }
-
-
 }
-const atm = new ChasMachine(10000, data, 12345)
+
+const atm = new CashMachine(10000, 12345)
 
 const card1 = new Card(1001, 12, "Jan", "Kowalski", new Date ())
 
@@ -308,8 +321,8 @@ atm.checkBalance()
 atm.insertAmount(199)
 
 atm.payOut()
-
-atm.checkBalance()
+//
+// atm.checkBalance()
 
 // atm.maintenance(12345, 1)
 
@@ -329,3 +342,5 @@ atm.checkBalance()
 //         console.log(el.id) ))
 // const a1 = new userAccount(data[0])
 // console.log(a1)
+
+
