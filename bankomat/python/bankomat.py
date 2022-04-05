@@ -1,10 +1,12 @@
+from asyncio.windows_events import NULL
 from curses.ascii import US
 import json
+
+
 def readData():
     with open('users.json') as file:
         clients = json.load(file)
     return clients
-
 
 
 class UserData():
@@ -17,6 +19,7 @@ class UserData():
         self.yearOfBorn = yearOfBorn
         self.assignedCards = assignedCards
         self.operations = operations
+
     def __str__(self):
         return self.id, self.name, self.surname, self.email, self.gender, self.yearOfBorn, self.assignedCards, self.operations
 
@@ -26,11 +29,13 @@ class AssignedCards():
         self.number = number
         self.pin = pin
 
+
 class OperationsData():
     def __init__(self, operationId, operationDate, moneyNum):
         self.operationId = operationId
         self.operationDate = operationDate
         self.moneyNum = moneyNum
+
 
 class UserAccount():
     def __init__(self, id, name, surname, assignedCards, operations):
@@ -39,11 +44,14 @@ class UserAccount():
         self.surname = surname
         self.assignedCards = assignedCards
         self.operations = operations
+        
+
 
 class Operation(OperationsData):
     def __init__(self, operationId, operationDate, moneyNum):
         super.__init__(operationId, operationDate, moneyNum)
-        
+
+
 class Card():
     def __init__(self, number, cvs, name, surname, expiryDate):
         self.number = number
@@ -58,74 +66,108 @@ class BankProvider(object):
         self.__data = readData()
 
     __instance = None
+
     def __new__(cls, val):
         if BankProvider.__instance is None:
             BankProvider.__instance = object.__new__(cls)
         BankProvider.__instance.val = val
         return BankProvider.__instance
 
-    def checkPin(self, number, pin):
-        return self.__findAccount(number, pin)
-
     def __findAccount(self, number, pin):
-        for item in self.data:
-            if item.assignedCards: 
-                account = lambda card: card.id == number and card.pin == pin
-                yyy = next(filter(account, self.__data), None)
-        
-        return yyy
+        for item in readData():
+            for card in item["assignedCards"]:
+                if card["id"] == number and card["pin"] == pin:
+                    return True
+        return False
 
-    def __findAccountsData(self, id):
-        data = lambda item: item.id == id
-        yyy = next(filter(data, self.__data), None)
+    def __findAccountData(self, id):
+        if next(filter(lambda item: item["id"] == id, readData()), False):
+            return True
+        else:
+            return False
 
+    def checkPin(self, number, pin):
+        return self.__findAccount(number, pin)   
 
     def payOut(self, number, pin, money):
-        account = self.__findAccount(number, pin):
+        account = self.__findAccount(number, pin)
         if account:
             if account.getBalance() >= money:
-                operationData = OperationsData()
+                operationData = 
 
 
+class CashMashine():
+    def __init__(self, moneyAmount):
 
-# class CashMashine():
-#     def __init__(self, moneyAmount, bankProvider):
+        self.__moneyAmount = moneyAmount
+        self.__bankProvider = BankProvider()
+        self.__inputedCard = None
+        self.__inputedPin = None
+        self.__inputedAmount = None
+        self.__isLogged = False
 
-#         self.__moneyAmount = moneyAmount
-#         self.__bankProvider = bankProvider
-#         self.__inputedCard = None 
-#         self.__inputedPin = None
-#         self.__inputedAmount = None
+    def insertCard(self, card):
 
-#     def insertCard(self, card):
+        if self.__inputedCard != None:
+            return "Error"
 
-#         if self.__inputedCard != None:
-#             return "there is already one card"
+        self.__inputedCard = card
 
-#         self.__inputedCard = card
+    def insertPin(self, pin):
+        self.__inputedPin = pin
 
-#         return "insert PIN"
+    def __checkPinInBank(self):
+        if self.__inputedCard["id"] and self.__inputedPin:
+            return self.__bankProvider.checkPin(self.__inputedCard["id"], self.__inputedPin)
+        else:
+            print("you must first insert amout of money you want withdraw")
 
 
-#     def insertPin(self, pin):
-#         self.__pin = pin
-#         return "insert amount"
+    def __payOutFromBank(self):
+        if self.__inputedCard["id"] and self.__inputedPin:
+            return self.__bankProvider.checkPin(self.__inputedCard["id"], self.__inputedPin, self.__inputedAmount)
 
-#     def insertAmount(self, amount):
-#         if amount > self.__moneyAmount:
-#             return "Error"
-#         else:
-#             self.__inputedAmount = amount
-#             return "wait for your money"
+    def logIn(self):
+        if self.__checkPinInBank():
+            print("you are succesfully logged")
+            self.isLogged = True
+
+    def insertAmount(self, amount):
+        if self.isLogged:
+            if amount <= self.__moneyAmount:
+                self.__inputedAmount = amount
+                print(f"cash to withdraw: {amount}")
+            else:
+                print("sorry atm have not enought cash to withdraw")
+        else:
+            print("you aren't logged in")
+               
+
+    def payOut(self):
+        if self.isLogged:
+            if self.__inputedAmount and self.__payOutFromBank():
+                self.__moneyAmount -= self.__inputedAmount
+                print(f"you withdrew {self.__inputedAmount}")
+
+        else:
+            print("you aren't logged in")
+
+    def checkBalance(self):
+        if self.isLogged:
+            if self.__inputedCard["id"] and self.__inputedPin:
+                balance = self.__bankProvider.checkBalanceFromBank(self.__inputedCard["id"], self.__inputedPin) 
+                if balance == NULL:
+                    print("Unknown saldo in your bank account")
+                else:
+                    print(f"You have {balance} money in your bank account")
+            else:
+                print("firstly you must insert amount of money you want to withdraw")
+
     
-#     def payOut(self):
-#         self.__bankProvider.payOut(self.__inputedCard, self.__inputedPin, self.__inputedAmount)
 
-#         return self.__inputedAmount
-    
 # with open("people.json") as file:
 #     clients = json.load(file)
-#     for person in clients:  
+#     for person in clients:
 #         newbank = BankProvider()
 #         newCard = Card(person["CardNumber"], "8/12", person["name"], person["surname"], "12.02.10")
 #         break
