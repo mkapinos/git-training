@@ -1,6 +1,7 @@
 from asyncio.windows_events import NULL
 from curses.ascii import US
 import json
+import functools
 
 
 def readData():
@@ -25,31 +26,36 @@ class UserData():
 
 
 class AssignedCards():
-    def __init__(self, number, pin):
-        self.number = number
-        self.pin = pin
+    def __init__(self, data):
+        self.number = data["id"]
+        self.pin = data["pin"]
 
 
 class OperationsData():
-    def __init__(self, operationId, operationDate, moneyNum):
-        self.operationId = operationId
-        self.operationDate = operationDate
-        self.moneyNum = moneyNum
+    def __init__(self, data):
+        self.operationId = data["id"]
+        self.operationDate = data["date"]
+        self.moneyNum = data["amount"]
 
+class Operation():
+    def __init__(self, data):
+        self.operationId = data["id"]
+        self.operationDate = data["date"]
+        self.moneyNum = data["amount"]
 
 class UserAccount():
-    def __init__(self, id, name, surname, assignedCards, operations):
-        self.id = id
-        self.name = name
-        self.surname = surname
-        self.assignedCards = assignedCards
-        self.operations = operations
-        
 
+    def __init__(self, data):
 
-class Operation(OperationsData):
-    def __init__(self, operationId, operationDate, moneyNum):
-        super.__init__(operationId, operationDate, moneyNum)
+        self.id = data["id"]
+        self.name = data["first_name"]
+        self.surname = data["last_name"]
+        self.assignedCards = map(lambda item: AssignedCards(item), data["assignedCards"])
+        self.operations = map(lambda item: Operation(item), data["operations"])
+
+    def getBalance(self):
+        return functools.reduce(lambda x, y: x+y, self.operations)
+
 
 
 class Card():
@@ -74,14 +80,14 @@ class BankProvider(object):
         return BankProvider.__instance
 
     def __findAccount(self, number, pin):
-        for item in readData():
+        for item in self.__data:
             for card in item["assignedCards"]:
                 if card["id"] == number and card["pin"] == pin:
                     return True
         return False
 
     def __findAccountData(self, id):
-        if next(filter(lambda item: item["id"] == id, readData()), False):
+        if next(filter(lambda item: item["id"] == id, self.__data), False):
             return True
         else:
             return False
@@ -124,7 +130,7 @@ class CashMashine():
 
 
     def __payOutFromBank(self):
-        if self.__inputedCard["id"] and self.__inputedPin:
+        if self.__inputedCard and self.__inputedCard.id and self.__inputedPin:
             return self.__bankProvider.checkPin(self.__inputedCard["id"], self.__inputedPin, self.__inputedAmount)
 
     def logIn(self):
