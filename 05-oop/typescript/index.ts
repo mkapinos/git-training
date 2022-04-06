@@ -1,65 +1,8 @@
-const data: UserData[] = [
-  {
-    "id": 1,
-    "first_name": "Dennison",
-    "last_name": "Grainger",
-    "email": "dgrainger0@ucoz.ru",
-    "gender": "Non-binary",
-    "yearOfBorn": 1983,
-    "operations": [
-      {
-        "id": 1,
-        "date": "3/5/2021",
-        "amount": 375.94
-      },
-      {
-        "id": 2,
-        "date": "11/18/2021",
-        "amount": -583.76
-      },
-      {
-        "id": 3,
-        "date": "1/10/2022",
-        "amount": 214.03
-      },
-      {
-        "id": 4,
-        "date": "9/19/2021",
-        "amount": 342.1
-      },
-      {
-        "id": 5,
-        "date": "6/26/2021",
-        "amount": -937.85
-      },
-      {
-        "id": 6,
-        "date": "3/2/2022",
-        "amount": -618.17
-      },
-      {
-        "id": 7,
-        "date": "7/2/2021",
-        "amount": -542.9
-      },
-      {
-        "id": 8,
-        "date": "3/30/2021",
-        "amount": -26.49
-      },
-      {
-        "id": 9,
-        "date": "9/20/2021",
-        "amount": -166.49
-      },
-      {
-        "id": 10,
-        "date": "8/15/2021",
-        "amount": 804.54
-      }
-    ]
-  }
-];
+
+import res from './data';
+
+const data = res as UserData[];
+// console.log({data})
 
 interface OperationData {
   id: number;
@@ -92,6 +35,32 @@ class User {
     this.gender = data.gender;
     this.yearOfBorn = data.yearOfBorn;
   }
+
+  calculateAge() {
+    return 2022 - this.yearOfBorn;
+  }
+
+  toString() {
+    return this.firstName + ' ' + this.lastName;
+  }
+
+  toJSON() {
+    return {
+      id: this.id,
+      first_name: this.firstName,
+      last_name: this.lastName,
+      email: this.email,
+      gender: this.gender,
+      yearOfBorn: this.yearOfBorn,
+      age: this.calculateAge()
+    }
+  }
+}
+
+class Europejczyk extends User {
+  toString() {
+    return this.lastName + ' ' + this.firstName;
+  }
 }
 
 class UserAccount {
@@ -119,85 +88,109 @@ class Operation {
 
 const user1 = new User(data[0]);
 const user2 = new User(data[0]);
-
 const userAccount1 = new UserAccount(data[0]);
 
-interface ElectricVehicle {
-  checkBattery(): number;
-}
+// console.log(data[0]);
+// console.log(user1);
+// console.log(userAccount1);
 
-interface AutomateVehicle {
-  x: boolean;
-}
+// console.log('user1 is user: ', user1 instanceof User);
+// console.log('userAccount1 is user: ', userAccount1 instanceof User);
+//
+// console.log('typeof data[0]: ', typeof data[0]);
+// console.log('typeof data: ', typeof data);
+// console.log('is array: ', Array.isArray(data));
+//
+// const x = 1;
+// console.log('typeof x: ', typeof x);
+// const y = 'abc';
+// console.log('typeof y: ', typeof y);
+// const z = true;
+// console.log('typeof z: ', typeof z);
+// const a: any = {};
+// console.log('typeof a: ', typeof a);
+// const b: any[] = [];
+// console.log('typeof b: ', typeof b);
 
-abstract class Vehicle {
-  abstract handlebar: string;
-  wheels: number = 4;
+let message = 'Hello, ' + user1;
+console.log(message);
+user1.lastName = 'Kowalski';
+message = 'Hello, ' + user1;
+console.log(message);
+message = 'Hello, ' + user2;
+console.log(message);
 
-  abstract turnOnLights(): string;
+const jsonString = JSON.stringify(user2);
+console.log(jsonString);
 
-  goAhead() {
-    return 'goAhead';
+
+// console.log(JSON.)
+
+abstract class Base {
+
+  public readonly accountNumber: string = '';
+  protected pin: string;
+
+  abstract run(): void;
+
+  checkPin(pin: string): boolean {
+    return this.pin === pin;
+  }
+
+  constructor(pin: string) {
+    this.pin = pin;
   }
 
 }
 
-class Car extends Vehicle {
-  handlebar: 'left' | 'right' = 'left';
-  clutch: boolean = false;
-
-  turnOnLights() {
-    return 'CarTurnOnLights'
-  }
-
+interface Editable {
+  edit(): void;
 }
 
-class ElectricCar extends Car implements ElectricVehicle {
-  private battery: number = 100;
-
-  checkBattery(): number {
-    return this.battery;
+class Animal extends Base {
+  protected legsCount: number = 4;
+  run() {
+    console.log('Animal is running');
   }
 }
 
-class Tractor extends Vehicle {
-  handlebar: 'center' = 'center';
-  lift: boolean = true;
+class Dog extends Animal {
 
-  turnOnLights() {
-    return 'TractorTurnOnLights'
+  run() {
+    this.legsCount++;
+    console.log('Animal is running');
   }
 }
 
-class ElectricTractor extends Tractor implements ElectricVehicle, AutomateVehicle {
+class Person extends Base implements Editable {
+  run() {
+    console.log('Person is running');
+  }
 
-  x: boolean = false;
-
-  private lion: number = 1;
-
-  checkBattery(): number {
-    return this.lion;
+  edit() {
+    console.log('Person is edditing');
   }
 }
 
-const tractor = new Tractor();
-const eTractor = new ElectricTractor();
-
-const car = new Car();
-const eCar = new ElectricCar();
-
-tractor.turnOnLights()
-tractor.goAhead()
-
-eTractor.checkBattery()
-
-function checkBattery(object: ElectricVehicle) {
-  return object.checkBattery();
+class Car implements Editable {
+  edit() {
+    console.log('Car is edditing');
+  }
 }
 
-checkBattery(eCar);
-checkBattery(eTractor);
+const animal1 = new Animal('abc');
+const person1 = new Person('abc');
+const car1 = new Car();
 
+console.log(animal1.accountNumber);
+
+const arr = [animal1, person1, car1];
+
+arr.forEach(item => {
+  if (item instanceof Base) {
+    item.run();
+  }
+});
 
 
 
