@@ -61,8 +61,7 @@ def findAccountData(id):
 
 def payOut(number, pin, moneyNum):
     account = findAccount(number, pin)
-    if account:
-        if getBalance(account) >= moneyNum:
+
             
 
 

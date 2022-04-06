@@ -1,7 +1,6 @@
-from asyncio.windows_events import NULL
-from curses.ascii import US
 import json
 import functools
+import datetime
 
 
 def readData():
@@ -10,19 +9,11 @@ def readData():
     return clients
 
 
-class UserData():
-    def __init__(self, id, name, surname, email, gender, yearOfBorn, assignedCards, operations):
-        self.id = id
-        self.name = name
-        self.surname = surname
-        self.email = email
-        self.gender = gender
-        self.yearOfBorn = yearOfBorn
-        self.assignedCards = assignedCards
-        self.operations = operations
-
-    def __str__(self):
-        return self.id, self.name, self.surname, self.email, self.gender, self.yearOfBorn, self.assignedCards, self.operations
+def writeData(listObj):
+    with open('users.json', 'w') as json_file:
+        json.dump(listObj, json_file,
+                  indent=4,
+                  separators=(',', ': '))
 
 
 class AssignedCards():
@@ -31,17 +22,12 @@ class AssignedCards():
         self.pin = data["pin"]
 
 
-class OperationsData():
-    def __init__(self, data):
-        self.operationId = data["id"]
-        self.operationDate = data["date"]
-        self.moneyNum = data["amount"]
-
 class Operation():
     def __init__(self, data):
         self.operationId = data["id"]
         self.operationDate = data["date"]
         self.moneyNum = data["amount"]
+
 
 class UserAccount():
 
@@ -50,12 +36,12 @@ class UserAccount():
         self.id = data["id"]
         self.name = data["first_name"]
         self.surname = data["last_name"]
-        self.assignedCards = map(lambda item: AssignedCards(item), data["assignedCards"])
+        self.assignedCards = map(
+            lambda item: AssignedCards(item), data["assignedCards"])
         self.operations = map(lambda item: Operation(item), data["operations"])
 
     def getBalance(self):
-        return functools.reduce(lambda x, y: x+y, self.operations)
-
+        return functools.reduce(lambda prev, curr: prev + curr.amount, self.operations, 0)
 
 
 class Card():
@@ -67,39 +53,75 @@ class Card():
         self.expiryDate = expiryDate
 
 
-class BankProvider(object):
+class BankProvider(dict):
     def __init__(self):
         self.__data = readData()
+        self.accounts = map(lambda item: UserAccount(item), self.__data)
+        print(len(self.__data))
 
-    __instance = None
+    # __instance = None
 
-    def __new__(cls, val):
-        if BankProvider.__instance is None:
-            BankProvider.__instance = object.__new__(cls)
-        BankProvider.__instance.val = val
-        return BankProvider.__instance
+    # def __new__(cls, val):
+    #     if BankProvider.__instance is None:
+    #         BankProvider.__instance = object.__new__(cls)
+    #     BankProvider.__instance[val] = val
+    #     return BankProvider.__instance
+
+    __instance__ = None
+
+    def __new__(cls, *args, **kwargs):
+        if BankProvider.__instance__ is None:
+            BankProvider.__instance__ = dict.__new__(cls)
+        return BankProvider.__instance__
 
     def __findAccount(self, number, pin):
-        for item in self.__data:
-            for card in item["assignedCards"]:
-                if card["id"] == number and card["pin"] == pin:
-                    return True
-        return False
+        for account in self.accounts:
+            for card in account.assignedCards:
+                if card.number == number and card.pin == pin:
+                    return account
+        return None
 
     def __findAccountData(self, id):
-        if next(filter(lambda item: item["id"] == id, self.__data), False):
-            return True
+        founded = filter(lambda item: item["id"] == id, self.__data)
+        if len(founded) > 0:
+            return next(founded)
         else:
-            return False
+            return None
 
     def checkPin(self, number, pin):
-        return self.__findAccount(number, pin)   
+        return self.__findAccount(number, pin) is not None
 
     def payOut(self, number, pin, money):
         account = self.__findAccount(number, pin)
-        if account:
+        if account is not None:
             if account.getBalance() >= money:
-                operationData = 
+                preparedMoney = account.getBalance()
+                preparedId = len(account["operations"] + 1)
+                preparedDate = datetime.datetime.now()
+                preparedMoney -= money
+                operationData = {"id": preparedId,
+                                 "date": preparedDate, "amount": preparedMoney}
+                account["operations"].append(Operation(operationData))
+
+            accountData = self.__findAccountData(account["userId"])
+            if accountData is not None:
+                accountData["operations"].append(operationData)
+                writeData(self.__data)
+                return True
+            else:
+                print("not enough money")
+        else:
+            print("invalid authorisation")
+        return False
+
+    def checkBalanceFromBank(self, number, pin):
+        print(number, pin)
+        account = self.__findAccount(number, pin)
+        if account is not None:
+            return account.getBalance()
+        else:
+            print("invalid authorisation")
+        return None
 
 
 class CashMashine():
@@ -113,7 +135,7 @@ class CashMashine():
         self.__isLogged = False
 
     def insertCard(self, card):
-
+        print(card)
         if self.__inputedCard != None:
             return "Error"
 
@@ -123,15 +145,15 @@ class CashMashine():
         self.__inputedPin = pin
 
     def __checkPinInBank(self):
-        if self.__inputedCard["id"] and self.__inputedPin:
-            return self.__bankProvider.checkPin(self.__inputedCard["id"], self.__inputedPin)
+        print("sss", self.__inputedCard)
+        if self.__inputedCard.number and self.__inputedPin:
+            return self.__bankProvider.checkPin(self.__inputedCard.number, self.__inputedPin)
         else:
             print("you must first insert amout of money you want withdraw")
 
-
     def __payOutFromBank(self):
         if self.__inputedCard and self.__inputedCard.id and self.__inputedPin:
-            return self.__bankProvider.checkPin(self.__inputedCard["id"], self.__inputedPin, self.__inputedAmount)
+            return self.__bankProvider.checkPin(self.__inputedCard.number, self.__inputedPin, self.__inputedAmount)
 
     def logIn(self):
         if self.__checkPinInBank():
@@ -147,7 +169,6 @@ class CashMashine():
                 print("sorry atm have not enought cash to withdraw")
         else:
             print("you aren't logged in")
-               
 
     def payOut(self):
         if self.isLogged:
@@ -160,16 +181,16 @@ class CashMashine():
 
     def checkBalance(self):
         if self.isLogged:
-            if self.__inputedCard["id"] and self.__inputedPin:
-                balance = self.__bankProvider.checkBalanceFromBank(self.__inputedCard["id"], self.__inputedPin) 
-                if balance == NULL:
+            if self.__inputedCard.number and self.__inputedPin:
+                balance = self.__bankProvider.checkBalanceFromBank(
+                    self.__inputedCard.number, self.__inputedPin)
+                if balance == None:
                     print("Unknown saldo in your bank account")
                 else:
                     print(f"You have {balance} money in your bank account")
             else:
                 print("firstly you must insert amount of money you want to withdraw")
 
-    
 
 # with open("people.json") as file:
 #     clients = json.load(file)
@@ -186,3 +207,9 @@ class CashMashine():
 
 # # print(newBankomat.payOut())
 # # print("Thank you")
+atm = CashMashine(10000000000000)
+card1 = Card(1001, 12, "Jan", "Kowalski", datetime.datetime.now())
+atm.insertCard(card1)
+atm.insertPin(1234)
+atm.logIn()
+atm.checkBalance()
