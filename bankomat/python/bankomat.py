@@ -2,7 +2,6 @@ import json
 import functools
 import datetime
 
-
 def readData():
     with open('users.json') as file:
         clients = json.load(file)
@@ -36,12 +35,12 @@ class UserAccount():
         self.id = data["id"]
         self.name = data["first_name"]
         self.surname = data["last_name"]
-        self.assignedCards = map(
-            lambda item: AssignedCards(item), data["assignedCards"])
-        self.operations = map(lambda item: Operation(item), data["operations"])
+        self.assignedCards = list(map(
+            lambda item: AssignedCards(item), data["assignedCards"]))
+        self.operations = list(map(lambda item: Operation(item), data["operations"]))
 
     def getBalance(self):
-        return functools.reduce(lambda prev, curr: prev + curr.amount, self.operations, 0)
+        return functools.reduce(lambda prev, curr: prev + curr.moneyNum, self.operations, 0)
 
 
 class Card():
@@ -56,16 +55,7 @@ class Card():
 class BankProvider(dict):
     def __init__(self):
         self.__data = readData()
-        self.accounts = map(lambda item: UserAccount(item), self.__data)
-        print(len(self.__data))
-
-    # __instance = None
-
-    # def __new__(cls, val):
-    #     if BankProvider.__instance is None:
-    #         BankProvider.__instance = object.__new__(cls)
-    #     BankProvider.__instance[val] = val
-    #     return BankProvider.__instance
+        self.accounts = list(map(lambda item: UserAccount(item), self.__data))
 
     __instance__ = None
 
@@ -75,16 +65,22 @@ class BankProvider(dict):
         return BankProvider.__instance__
 
     def __findAccount(self, number, pin):
+        founded = None
+        #print('start finding', len(self.accounts))
         for account in self.accounts:
+            #print('Account: ', account.id)
             for card in account.assignedCards:
+                #print(card.number, card.pin, 'vs', number, pin)
                 if card.number == number and card.pin == pin:
+                    founded = account
                     return account
-        return None
+        #print('not found')
+        return founded
 
     def __findAccountData(self, id):
-        founded = filter(lambda item: item["id"] == id, self.__data)
+        founded = list(filter(lambda item: item["id"] == id, self.__data))
         if len(founded) > 0:
-            return next(founded)
+            return founded[0]
         else:
             return None
 
@@ -96,31 +92,32 @@ class BankProvider(dict):
         if account is not None:
             if account.getBalance() >= money:
                 preparedMoney = account.getBalance()
-                preparedId = len(account["operations"] + 1)
-                preparedDate = datetime.datetime.now()
-                preparedMoney -= money
+                preparedId = len(account.operations) + 1
+                preparedDate = datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
+                preparedMoney = -money
                 operationData = {"id": preparedId,
                                  "date": preparedDate, "amount": preparedMoney}
-                account["operations"].append(Operation(operationData))
+                account.operations.append(Operation(operationData))
 
-            accountData = self.__findAccountData(account["userId"])
-            if accountData is not None:
-                accountData["operations"].append(operationData)
-                writeData(self.__data)
-                return True
+                accountData = self.__findAccountData(account.id)
+                #print('accountData', accountData)
+                if accountData is not None:
+                    accountData["operations"].append(operationData)
+                    writeData(self.__data)
+                    #print('writeData')
+                    return True
             else:
-                print("not enough money")
+                print("Error: not enough money")
         else:
-            print("invalid authorisation")
+            print("Error: invalid authorisation")
         return False
 
     def checkBalanceFromBank(self, number, pin):
-        print(number, pin)
         account = self.__findAccount(number, pin)
         if account is not None:
             return account.getBalance()
         else:
-            print("invalid authorisation")
+            print("Error: invalid authorisation")
         return None
 
 
@@ -135,7 +132,6 @@ class CashMashine():
         self.__isLogged = False
 
     def insertCard(self, card):
-        print(card)
         if self.__inputedCard != None:
             return "Error"
 
@@ -145,20 +141,24 @@ class CashMashine():
         self.__inputedPin = pin
 
     def __checkPinInBank(self):
-        print("sss", self.__inputedCard)
-        if self.__inputedCard.number and self.__inputedPin:
+        if self.__inputedCard and self.__inputedCard.number and self.__inputedPin:
             return self.__bankProvider.checkPin(self.__inputedCard.number, self.__inputedPin)
         else:
-            print("you must first insert amout of money you want withdraw")
+            print("Error: you must first insert amout of money you want withdraw")
 
     def __payOutFromBank(self):
-        if self.__inputedCard and self.__inputedCard.id and self.__inputedPin:
-            return self.__bankProvider.checkPin(self.__inputedCard.number, self.__inputedPin, self.__inputedAmount)
+        if self.__inputedCard and self.__inputedCard.number and self.__inputedPin:
+            return self.__bankProvider.payOut(self.__inputedCard.number, self.__inputedPin, self.__inputedAmount)
 
     def logIn(self):
         if self.__checkPinInBank():
             print("you are succesfully logged")
             self.isLogged = True
+        else:
+            print("Error: wrong pin or card number")
+            self.isLogged = False
+
+        return self.isLogged
 
     def insertAmount(self, amount):
         if self.isLogged:
@@ -166,15 +166,20 @@ class CashMashine():
                 self.__inputedAmount = amount
                 print(f"cash to withdraw: {amount}")
             else:
-                print("sorry atm have not enought cash to withdraw")
+                print("Error: sorry atm have not enought cash to withdraw")
         else:
-            print("you aren't logged in")
+            print("Error: you aren't logged in")
 
     def payOut(self):
         if self.isLogged:
-            if self.__inputedAmount and self.__payOutFromBank():
-                self.__moneyAmount -= self.__inputedAmount
-                print(f"you withdrew {self.__inputedAmount}")
+            if self.__inputedAmount:
+                if(self.__payOutFromBank()):
+                    self.__moneyAmount -= self.__inputedAmount
+                    print(f"you withdrew {self.__inputedAmount}")
+                else:
+                    print("Pay out from bank error")
+            else:
+                print("Please choose amount")
 
         else:
             print("you aren't logged in")
@@ -189,27 +194,14 @@ class CashMashine():
                 else:
                     print(f"You have {balance} money in your bank account")
             else:
-                print("firstly you must insert amount of money you want to withdraw")
+                print("Error: firstly you must insert amount of money you want to withdraw")
 
-
-# with open("people.json") as file:
-#     clients = json.load(file)
-#     for person in clients:
-#         newbank = BankProvider()
-#         newCard = Card(person["CardNumber"], "8/12", person["name"], person["surname"], "12.02.10")
-#         break
-
-# # newBankomat = CashMashine(10000000000000, newbank)
-# # print(newBankomat.insertCard(newCard))
-
-# # print(newBankomat.insertPin(1880))
-# # print(newBankomat.insertAmount(739052356))
-
-# # print(newBankomat.payOut())
-# # print("Thank you")
 atm = CashMashine(10000000000000)
 card1 = Card(1001, 12, "Jan", "Kowalski", datetime.datetime.now())
 atm.insertCard(card1)
 atm.insertPin(1234)
-atm.logIn()
-atm.checkBalance()
+if atm.logIn():
+    atm.checkBalance()
+    atm.insertAmount(100)
+    atm.payOut()
+    print("Thank you")
