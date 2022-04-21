@@ -1,29 +1,15 @@
 const fs = require('fs');
+const mysql = require('sync-mysql')
 
-
-const Mysql = require('sync-mysql')
-
-const connection = new Mysql({
+const connection = new mysql({
     host:'localhost',
     user:'root',
     password:'root',
     database:'bankomat'
 })
 
-var result = connection.query('SELECT * FROM accounts')
-console.log(result)
-
-function readData() {
-    const data = fs.readFileSync('../accounts.json', 'utf8');
-    return JSON.parse(data);
-}
-
-function writeData(a:any) {
-    fs.writeFile('../accounts.json', JSON.stringify(a), (err:any) => {
-        if (err){
-            console.log(err)
-        }
-    })}
+// const result = connection.query('SELECT * FROM accounts')
+// console.log(result)
 
 interface OperationData {
     id: number;
@@ -46,25 +32,6 @@ interface UserData {
     operations: OperationData[];
     assignedCards: AssignedCardsData[];
 }
-
-
-// class user {
-//     id: number;
-//     firstName: string;
-//     lastName: string;
-//     email: string;
-//     gender: string;
-//     yearOfBorn: number;
-
-//     constructor(data: userData) {
-//       this.id = data.id;
-//       this.firstName = data.first_name;
-//       this.lastName = data.last_name;
-//       this.email = data.email;
-//       this.gender = data.gender;
-//       this.yearOfBorn = data.yearOfBorn;
-//     }
-//   }
 
 class UserAccount {
     userId: number;
@@ -133,9 +100,6 @@ class BankProvider {
 
     private static instance: BankProvider;
 
-    private accountsData!: UserAccount[]
-    private data: UserData[];
-
     public static getInstance(): BankProvider {
         if (!BankProvider.instance) {
             BankProvider.instance = new BankProvider();
@@ -144,8 +108,6 @@ class BankProvider {
     }
 
     private constructor(){
-        this.data = readData();
-        this.refreshUsersAccounts();
     }
 
     public checkPin(
@@ -157,12 +119,39 @@ class BankProvider {
 
     private findAccount(cardNumber: number,
                         pin: number): UserAccount | undefined {
-        return this.accountsData.find(item => {
-            return item.assignedCards.find(card => card.id === cardNumber && card.pin === pin)
-        });
-    }
-    private findAccountData(id: number): UserData | undefined {
-        return this.data.find(item => item.id === id);
+
+        const query = 'SELECT * from cards WHERE cards.number = "'
+            + cardNumber + '" AND cards.pin = ' + pin;
+        const result = connection.query(query)
+
+        if (result && result[0]) {
+            const accountId = result[0].account_id;
+
+            const accResult = connection.query(
+                'SELECT * from accounts WHERE accounts.id = '
+                    + accountId
+            );
+
+            const account = accResult[0];
+            if (account) {
+                const accountData: UserData = {
+                    id: account.id,
+                    first_name: account.first_name,
+                    last_name: account.last_name,
+                    email: account.last_name,
+                    gender: account.gender,
+                    yearOfBorn: account.year_of_born,
+                    operations: [],
+                    assignedCards: [],
+                }
+                return new UserAccount(accountData);
+            }
+        }
+
+        return;
+        // return this.accountsData.find(item => {
+        //     return item.assignedCards.find(card => card.id === cardNumber && card.pin === pin)
+        // });
     }
 
     public payOut(
@@ -178,11 +167,7 @@ class BankProvider {
 
                 account.operations.push(new Operation(operationData))
 
-                const accountData = this.findAccountData(account.userId);
-                if (accountData) {
-                    accountData.operations.push(operationData);
-                    writeData(this.data)
-                }
+                // TODO add operation
 
                 return true
             } else {
@@ -208,9 +193,6 @@ class BankProvider {
         return null;
     }
 
-    private refreshUsersAccounts() {
-        this.accountsData = this.data.map((item:UserData) => new UserAccount(item));
-    }
 }
 
 class CashMachine {
@@ -323,11 +305,11 @@ class CashMachine {
 
 const atm = new CashMachine(10000, 12345)
 
-const card1 = new Card(1001, 12, "Jan", "Kowalski", new Date ())
+const card1 = new Card(123123123, 12, "Jan", "Kowalski", new Date ())
 
 atm.insertCard(card1)
 
-atm.insertPin(1234)
+atm.insertPin(234)
 
 atm.logIn()
 

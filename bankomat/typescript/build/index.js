@@ -1,41 +1,12 @@
 "use strict";
 var fs = require('fs');
-var Mysql = require('sync-mysql');
-var connection = new Mysql({
+var mysql = require('sync-mysql');
+var connection = new mysql({
     host: 'localhost',
     user: 'root',
     password: 'root',
     database: 'bankomat'
 });
-var result = connection.query('SELECT * FROM accounts');
-console.log(result);
-function readData() {
-    var data = fs.readFileSync('../accounts.json', 'utf8');
-    return JSON.parse(data);
-}
-function writeData(a) {
-    fs.writeFile('../accounts.json', JSON.stringify(a), function (err) {
-        if (err) {
-            console.log(err);
-        }
-    });
-}
-// class user {
-//     id: number;
-//     firstName: string;
-//     lastName: string;
-//     email: string;
-//     gender: string;
-//     yearOfBorn: number;
-//     constructor(data: userData) {
-//       this.id = data.id;
-//       this.firstName = data.first_name;
-//       this.lastName = data.last_name;
-//       this.email = data.email;
-//       this.gender = data.gender;
-//       this.yearOfBorn = data.yearOfBorn;
-//     }
-//   }
 var UserAccount = /** @class */ (function () {
     function UserAccount(data) {
         this.userId = data.id;
@@ -79,8 +50,6 @@ var Card = /** @class */ (function () {
 }());
 var BankProvider = /** @class */ (function () {
     function BankProvider() {
-        this.data = readData();
-        this.refreshUsersAccounts();
     }
     BankProvider.getInstance = function () {
         if (!BankProvider.instance) {
@@ -92,12 +61,32 @@ var BankProvider = /** @class */ (function () {
         return !!this.findAccount(cardNumber, pin);
     };
     BankProvider.prototype.findAccount = function (cardNumber, pin) {
-        return this.accountsData.find(function (item) {
-            return item.assignedCards.find(function (card) { return card.id === cardNumber && card.pin === pin; });
-        });
-    };
-    BankProvider.prototype.findAccountData = function (id) {
-        return this.data.find(function (item) { return item.id === id; });
+        var query = 'SELECT * from cards WHERE cards.number = "'
+            + cardNumber + '" AND cards.pin = ' + pin;
+        var result = connection.query(query);
+        if (result && result[0]) {
+            var accountId = result[0].account_id;
+            var accResult = connection.query('SELECT * from accounts WHERE accounts.id = '
+                + accountId);
+            var account = accResult[0];
+            if (account) {
+                var accountData = {
+                    id: account.id,
+                    first_name: account.first_name,
+                    last_name: account.last_name,
+                    email: account.last_name,
+                    gender: account.gender,
+                    yearOfBorn: account.year_of_born,
+                    operations: [],
+                    assignedCards: [],
+                };
+                return new UserAccount(accountData);
+            }
+        }
+        return;
+        // return this.accountsData.find(item => {
+        //     return item.assignedCards.find(card => card.id === cardNumber && card.pin === pin)
+        // });
     };
     BankProvider.prototype.payOut = function (cardNumber, pin, amount) {
         var account = this.findAccount(cardNumber, pin);
@@ -105,11 +94,7 @@ var BankProvider = /** @class */ (function () {
             if (account.getBalance() >= amount) {
                 var operationData = { id: account.operations.length + 1, date: new Date, amount: -amount };
                 account.operations.push(new Operation(operationData));
-                var accountData = this.findAccountData(account.userId);
-                if (accountData) {
-                    accountData.operations.push(operationData);
-                    writeData(this.data);
-                }
+                // TODO add operation
                 return true;
             }
             else {
@@ -130,9 +115,6 @@ var BankProvider = /** @class */ (function () {
             console.log("invalid authorisation");
         }
         return null;
-    };
-    BankProvider.prototype.refreshUsersAccounts = function () {
-        this.accountsData = this.data.map(function (item) { return new UserAccount(item); });
     };
     return BankProvider;
 }());
@@ -237,9 +219,9 @@ var CashMachine = /** @class */ (function () {
     return CashMachine;
 }());
 var atm = new CashMachine(10000, 12345);
-var card1 = new Card(1001, 12, "Jan", "Kowalski", new Date());
+var card1 = new Card(123123123, 12, "Jan", "Kowalski", new Date());
 atm.insertCard(card1);
-atm.insertPin(1234);
+atm.insertPin(234);
 atm.logIn();
 atm.checkBalance();
 atm.insertAmount(199);
