@@ -1,6 +1,27 @@
 import json
 import functools
 import datetime
+import mysql.connector
+
+import mysql.connector
+
+mydb = mysql.connector.connect(
+  host="127.0.0.1",
+  user="root",
+  password="root",
+  database="bankomat"
+)
+
+print(mydb)
+
+mycursor = mydb.cursor()
+
+mycursor.execute("SELECT * FROM accounts")
+
+myresult = mycursor.fetchall()
+
+for x in myresult:
+  print(x)
 
 def readData():
     with open('accounts.json') as file:
