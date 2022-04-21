@@ -1,61 +1,40 @@
 const fs = require('fs');
 
-const syncSql = require('sync-sql');
 
-const output = syncSql.mysql(
-    {
-        host: 'localhost',
-        user: 'root',
-        pass: 'root',
-        database: 'bankomat',
-        port: '3306'
-    },
-    "SELECT * FROM accounts"
-);
+const Mysql = require('sync-mysql')
 
-console.log(JSON.stringify(output));
+const connection = new Mysql({
+    host:'localhost',
+    user:'root',
+    password:'root',
+    database:'bankomat'
+})
 
-// const mysql = require('mysql');
-//
-// const con = mysql.createConnection({
-//     host: "localhost",
-//     user: "root",
-//     password: "root",
-//     database: "bankomat"
-// });
-//
-// con.connect(function(err: any) {
-//     if (err) throw err;
-//     console.log("Connected!");
-// });
-//
-// con.query("SELECT * FROM accounts", function (err: any, result: any) {
-//     if (err) throw err;
-//     console.log(result);
-// });
+var result = connection.query('SELECT * FROM accounts')
+console.log(result)
 
 function readData() {
-    const data = fs.readFileSync('./accounts.json', 'utf8');
+    const data = fs.readFileSync('../accounts.json', 'utf8');
     return JSON.parse(data);
 }
 
 function writeData(a:any) {
-    fs.writeFile('./accounts.json', JSON.stringify(a), (err:any) => {
-    if (err){
-        console.log(err)
-    }
-})}
+    fs.writeFile('../accounts.json', JSON.stringify(a), (err:any) => {
+        if (err){
+            console.log(err)
+        }
+    })}
 
 interface OperationData {
     id: number;
     date: any;
     amount: number;
-  }
+}
 
 interface AssignedCardsData{
     id: number;
     pin: number;
-  }
+}
 
 interface UserData {
     id: number;
@@ -66,9 +45,9 @@ interface UserData {
     yearOfBorn: number;
     operations: OperationData[];
     assignedCards: AssignedCardsData[];
-  }
+}
 
-  
+
 // class user {
 //     id: number;
 //     firstName: string;
@@ -76,7 +55,7 @@ interface UserData {
 //     email: string;
 //     gender: string;
 //     yearOfBorn: number;
-  
+
 //     constructor(data: userData) {
 //       this.id = data.id;
 //       this.firstName = data.first_name;
@@ -87,19 +66,19 @@ interface UserData {
 //     }
 //   }
 
-  class UserAccount {
+class UserAccount {
     userId: number;
     operations: Operation[];
     firstName: string;
     lastName: string;
     assignedCards: AssignedCards[]
-  
+
     constructor(data: UserData) {
-      this.userId = data.id;
-      this.operations = data.operations.map((item) => new Operation(item));
-      this.firstName = data.first_name;
-      this.lastName = data.last_name;
-      this.assignedCards = data.assignedCards.map((item) => new AssignedCards(item));
+        this.userId = data.id;
+        this.operations = data.operations.map((item) => new Operation(item));
+        this.firstName = data.first_name;
+        this.lastName = data.last_name;
+        this.assignedCards = data.assignedCards.map((item) => new AssignedCards(item));
     }
 
     getBalance() {
@@ -108,40 +87,40 @@ interface UserData {
             return prev
         }, 0)
     }
-  }
+}
 
-  class AssignedCards {
-      id: number;
-      pin: number;
-      constructor(data: AssignedCardsData){
-          this.id = data.id
-          this.pin = data.pin
-      }
-  }
+class AssignedCards {
+    id: number;
+    pin: number;
+    constructor(data: AssignedCardsData){
+        this.id = data.id
+        this.pin = data.pin
+    }
+}
 
-  class Operation {
+class Operation {
     id: number;
     date: Date;
     amount: number;
     constructor(data: OperationData) {
-      this.id = data.id;
-      this.date = data.date;
-      this.amount = data.amount;
+        this.id = data.id;
+        this.date = data.date;
+        this.amount = data.amount;
     }
-  }
+}
 
-  class Card {
+class Card {
     id: number
     CSV_code: number
     firstName: string
     lastName: string
     exp_date: Date
 
-    constructor (id: number, 
-        csv: number, 
-        name: string,
-        surname: string,
-        exp_date: Date){
+    constructor (id: number,
+                 csv: number,
+                 name: string,
+                 surname: string,
+                 exp_date: Date){
         this.id = id
         this.CSV_code = csv
         this.firstName = name
@@ -261,7 +240,7 @@ class CashMachine {
     public insertPin(pin: number){
         this.inputedPin = pin
     }
-    
+
     public logIn(){
         if (this.checkPinInBank()){
             console.log("you are succesfully logged")
@@ -271,22 +250,22 @@ class CashMachine {
 
     public insertAmount(amount: number){
         if (this.isLogged){
-                if(this.stateOfMoney >=amount ){
+            if(this.stateOfMoney >=amount ){
                 this.imputedAmount = amount
                 console.log(`cash to withrdaw: ${amount}`)
-                }
-                else console.log(`sorry atm have not enought cash to withdraw`)
             }
-            else console.log(`you must first log in`)
+            else console.log(`sorry atm have not enought cash to withdraw`)
+        }
+        else console.log(`you must first log in`)
     }
 
     public payOut(){
         if(this.isLogged){
             if (this.imputedAmount && this.payOutFromBank()){
-                    this.stateOfMoney -= this.imputedAmount
-                    console.log(`You wirdawed ${this.imputedAmount}`)
+                this.stateOfMoney -= this.imputedAmount
+                console.log(`You wirdawed ${this.imputedAmount}`)
             }
-            
+
         }
         else console.log(`you must first log in`)
     }
@@ -322,7 +301,7 @@ class CashMachine {
             console.log(`you must first insert amout of money you want withdraw`)
         }
     }
-    
+
     private checkAtmStatus(){
         return console.log(`money left in casbox ${this.stateOfMoney}`)
     }
@@ -337,7 +316,7 @@ class CashMachine {
 
     private payOutFromBank(){
         if(this.inputedCard?.id && this.inputedPin && this.imputedAmount){
-        return this.bankProvider.payOut(this.inputedCard.id, this.inputedPin, this.imputedAmount)
+            return this.bankProvider.payOut(this.inputedCard.id, this.inputedPin, this.imputedAmount)
         }
     }
 }
@@ -374,7 +353,7 @@ atm.payOut()
 
 // console.log(bankprovider1)
 
-// data.map((item:any) => item.assignedCards.forEach((el:assignedCards) => 
+// data.map((item:any) => item.assignedCards.forEach((el:assignedCards) =>
 //         console.log(el.id) ))
 // const a1 = new userAccount(data[0])
 // console.log(a1)
