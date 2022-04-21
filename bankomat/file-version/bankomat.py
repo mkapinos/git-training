@@ -1,6 +1,7 @@
 import json
 import functools
 import datetime
+from unittest import result
 import mysql.connector
 
 import mysql.connector
@@ -11,29 +12,6 @@ mydb = mysql.connector.connect(
   password="root",
   database="bankomat"
 )
-
-print(mydb)
-
-mycursor = mydb.cursor()
-
-mycursor.execute("SELECT * FROM accounts")
-
-myresult = mycursor.fetchall()
-
-for x in myresult:
-  print(x)
-
-def readData():
-    with open('accounts.json') as file:
-        clients = json.load(file)
-    return clients
-
-
-def writeData(listObj):
-    with open('accounts.json', 'w') as json_file:
-        json.dump(listObj, json_file,
-                  indent=4,
-                  separators=(',', ': '))
 
 
 class AssignedCards():
@@ -74,9 +52,6 @@ class Card():
 
 
 class BankProvider(dict):
-    def __init__(self):
-        self.__data = readData()
-        self.accounts = list(map(lambda item: UserAccount(item), self.__data))
 
     __instance__ = None
 
@@ -87,23 +62,40 @@ class BankProvider(dict):
 
     def __findAccount(self, number, pin):
         founded = None
-        #print('start finding', len(self.accounts))
-        for account in self.accounts:
-            #print('Account: ', account.id)
-            for card in account.assignedCards:
-                #print(card.number, card.pin, 'vs', number, pin)
-                if card.number == number and card.pin == pin:
-                    founded = account
-                    return account
-        #print('not found')
-        return founded
+        mycursor = mydb.cursor(dictionary=True)
+        mycursor.execute('SELECT * FROM cards WHERE cards.number = "' + str(number) + '" AND cards.pin='+ str(pin))
+        myresult = mycursor.fetchall()
+        print(myresult)
 
-    def __findAccountData(self, id):
-        founded = list(filter(lambda item: item["id"] == id, self.__data))
-        if len(founded) > 0:
-            return founded[0]
-        else:
-            return None
+        if myresult and myresult[0]:
+            print(myresult[0])
+            accountId = myresult[0]["account_id"]
+            accCursor = mydb.cursor(dictionary=True)
+            accCursor.execute('SELECT * FROM accounts WHERE id =' + str(accountId))
+            accResult = accCursor.fetchall()
+            print(accResult)
+        
+        account = accResult[0]
+
+        if account:
+            return UserAccount({
+                "id": account['id'],
+                "first_name": account['first_name'],
+                "last_name": account['last_name'],
+                "assignedCards": [],
+                "operations": []
+            })
+        
+        #print('start finding', len(self.accounts))
+        # for account in self.accounts:
+        #     #print('Account: ', account.id)
+        #     for card in account.assignedCards:
+        #         #print(card.number, card.pin, 'vs', number, pin)
+        #         if card.number == number and card.pin == pin:
+        #             founded = account
+        #             return account
+        # #print('not found')
+        return None
 
     def checkPin(self, number, pin):
         return self.__findAccount(number, pin) is not None
@@ -120,13 +112,13 @@ class BankProvider(dict):
                                  "date": preparedDate, "amount": preparedMoney}
                 account.operations.append(Operation(operationData))
 
-                accountData = self.__findAccountData(account.id)
-                #print('accountData', accountData)
-                if accountData is not None:
-                    accountData["operations"].append(operationData)
-                    writeData(self.__data)
-                    #print('writeData')
-                    return True
+                # accountData = self.__findAccountData(account.id)
+                # #print('accountData', accountData)
+                # if accountData is not None:
+                #     accountData["operations"].append(operationData)
+                #     writeData(self.__data)
+                #     #print('writeData')
+                #     return True
             else:
                 print("Error: not enough money")
         else:
@@ -218,9 +210,9 @@ class CashMashine():
                 print("Error: firstly you must insert amount of money you want to withdraw")
 
 atm = CashMashine(10000000000000)
-card1 = Card(1001, 12, "Jan", "Kowalski", datetime.datetime.now())
+card1 = Card(1234567890123456, 12, "Jan", "Kowalski", datetime.datetime.now())
 atm.insertCard(card1)
-atm.insertPin(1234)
+atm.insertPin(5632)
 if atm.logIn():
     atm.checkBalance()
     atm.insertAmount(100)
