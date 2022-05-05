@@ -1,10 +1,46 @@
 const fs = require('fs');
 
+const syncSql = require('sync-sql');
+
+const output = syncSql.mysql(
+    {
+        host: 'localhost',
+        user: 'root',
+        pass: 'root',
+        database: 'bankomat',
+        port: '3306'
+    },
+    "SELECT * FROM accounts"
+);
+
+console.log(JSON.stringify(output));
+
+// const mysql = require('mysql');
+//
+// const con = mysql.createConnection({
+//     host: "localhost",
+//     user: "root",
+//     password: "root",
+//     database: "bankomat"
+// });
+//
+// con.connect(function(err: any) {
+//     if (err) throw err;
+//     console.log("Connected!");
+// });
+//
+// con.query("SELECT * FROM accounts", function (err: any, result: any) {
+//     if (err) throw err;
+//     console.log(result);
+// });
+
 function readData() {
-    return require('./accounts.json');
+    const data = fs.readFileSync('./accounts.json', 'utf8');
+    return JSON.parse(data);
 }
 
-function writeData(a:any) {fs.writeFile('./accounts.json', JSON.stringify(a), (err:any) => {
+function writeData(a:any) {
+    fs.writeFile('./accounts.json', JSON.stringify(a), (err:any) => {
     if (err){
         console.log(err)
     }
