@@ -8,7 +8,7 @@ class BankProvider(dict):
 
     __instance__ = None
 
-    _db = None
+    __db = None
 
     def __new__(cls, *args, **kwargs):
         if BankProvider.__instance__ is None:
@@ -19,13 +19,14 @@ class BankProvider(dict):
                 password="root",
                 database="bankomat"
             )
-            BankProvider.__instance__._db = mydb
+            BankProvider.__instance__.__db = mydb
 
         return BankProvider.__instance__
 
     def __findAccount(self, number, pin):
         founded = None
-        mycursor = self._db.cursor(dictionary=True)
+        mycursor = self.__db.cursor(dictionary=True)
+        # TODO fix sql injection
         mycursor.execute('SELECT * FROM cards WHERE cards.number = "' + str(number) + '" AND cards.pin='+ str(pin))
         myresult = mycursor.fetchall()
         print(myresult)
@@ -33,7 +34,8 @@ class BankProvider(dict):
         if myresult and myresult[0]:
             print(myresult[0])
             accountId = myresult[0]["account_id"]
-            accCursor = self._db.cursor(dictionary=True)
+            accCursor = self.__db.cursor(dictionary=True)
+            # TODO fix sql injection
             accCursor.execute('SELECT * FROM accounts WHERE id =' + str(accountId))
             accResult = accCursor.fetchall()
             print(accResult)
@@ -48,17 +50,27 @@ class BankProvider(dict):
                     "assignedCards": [],
                     "operations": []
                 })
-            
-        #print('start finding', len(self.accounts))
-        # for account in self.accounts:
-        #     #print('Account: ', account.id)
-        #     for card in account.assignedCards:
-        #         #print(card.number, card.pin, 'vs', number, pin)
-        #         if card.number == number and card.pin == pin:
-        #             founded = account
-        #             return account
-        # #print('not found')
         return None
+
+    def __getAccountBalance(self, userAccount):
+        
+        mycursor = self.__db.cursor(dictionary=True)
+        
+        mycursor.execute(
+            'SELECT COALESCE(sum(amount), 0) AS sum FROM operations WHERE account_id = %s',
+            (userAccount.id, )
+        )
+
+        myresult = mycursor.fetchone()
+        return myresult['sum']
+
+    def __addOperation(self, userAccount, amount):
+        mycursor = self.__db.cursor(dictionary=True)
+        sql = "INSERT INTO operations (date, amount, account_id) VALUES (CURRENT_TIMESTAMP(), %s, %s)"
+        val = (amount, userAccount.id)
+        mycursor.execute(sql, val)
+        self.__db.commit()
+        return mycursor.lastrowid
 
     def checkPin(self, number, pin):
         return self.__findAccount(number, pin) is not None
@@ -66,22 +78,10 @@ class BankProvider(dict):
     def payOut(self, number, pin, money):
         account = self.__findAccount(number, pin)
         if account is not None:
-            if account.getBalance() >= money:
-                preparedMoney = account.getBalance()
-                preparedId = len(account.operations) + 1
-                preparedDate = datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
-                preparedMoney = -money
-                operationData = {"id": preparedId,
-                                 "date": preparedDate, "amount": preparedMoney}
-                account.operations.append(Operation(operationData))
-
-                # accountData = self.__findAccountData(account.id)
-                # #print('accountData', accountData)
-                # if accountData is not None:
-                #     accountData["operations"].append(operationData)
-                #     writeData(self.__data)
-                #     #print('writeData')
-                #     return True
+            balance = self.__getAccountBalance(account)
+            if balance >= money:
+                self.__addOperation(account, -money)
+                return True
             else:
                 print("Error: not enough money")
         else:
@@ -90,8 +90,4 @@ class BankProvider(dict):
 
     def checkBalanceFromBank(self, number, pin):
         account = self.__findAccount(number, pin)
-        if account is not None:
-            return account.getBalance()
-        else:
-            print("Error: invalid authorisation")
-        return None
+        return self.__getAccountBalance(account)
