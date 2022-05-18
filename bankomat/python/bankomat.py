@@ -4,11 +4,11 @@ from Card import Card
 from CashMachine import CashMashine
 
 atm = CashMashine(10000000000000)
-card1 = Card(123123123123, 12, "Jan", "Kowalski", datetime.datetime.now())
+card1 = Card(1234567890123456, 1234, "Kamila", "Kabanos", datetime.datetime.now())
 atm.insertCard(card1)
-atm.insertPin(122)
+atm.insertPin(5632)
 if atm.logIn():
     atm.checkBalance()
-    atm.insertAmount(100)
+    atm.insertAmount(300)
     atm.payOut()
     print("Thank you")

@@ -27,7 +27,7 @@ class BankProvider(dict):
         founded = None
         mycursor = self.__db.cursor(dictionary=True)
         # TODO fix sql injection
-        mycursor.execute('SELECT * FROM cards WHERE cards.number = "' + str(number) + '" AND cards.pin='+ str(pin))
+        mycursor.execute('SELECT * FROM cards WHERE cards.number = %s AND cards.pin= %s', (str(number),str(pin)))
         myresult = mycursor.fetchall()
         print(myresult)
 
@@ -36,7 +36,7 @@ class BankProvider(dict):
             accountId = myresult[0]["account_id"]
             accCursor = self.__db.cursor(dictionary=True)
             # TODO fix sql injection
-            accCursor.execute('SELECT * FROM accounts WHERE id =' + str(accountId))
+            accCursor.execute('SELECT * FROM accounts WHERE id = %s;', (str(accountId), ))
             accResult = accCursor.fetchall()
             print(accResult)
         
