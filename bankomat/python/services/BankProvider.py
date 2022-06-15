@@ -1,9 +1,9 @@
 import datetime
 import mysql.connector
 
-from Operation import Operation
-from UserAccount import UserAccount
-from config.BankProviderConfig import BankProviderConfig
+from models.Operation import Operation
+from models.UserAccount import UserAccount
+from config.Config import Config
 
 class BankProvider(dict):
 
@@ -14,12 +14,11 @@ class BankProvider(dict):
     def __new__(cls, *args, **kwargs):
         if BankProvider.__instance__ is None:
             BankProvider.__instance__ = dict.__new__(cls)
-            # mydb = mysql.connector.connect(BankProviderConfig.db)
             mydb = mysql.connector.connect(
-                host="127.0.0.1",
-                user="root",
-                password="root",
-                database="bankomat"
+                host=Config.db.host,
+                user=Config.db.user,
+                password=Config.db.password,
+                database=Config.db.database
             )
             BankProvider.__instance__.__db = mydb
 

@@ -1,4 +1,4 @@
-from BankProvider import BankProvider
+from services.BankProvider import BankProvider
 
 class CashMachine():
     def __init__(self, moneyAmount):
