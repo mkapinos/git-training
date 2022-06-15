@@ -40,10 +40,10 @@ LOCK TABLES `accounts` WRITE;
 
 INSERT INTO `accounts` (`id`, `first_name`, `last_name`, `email`, `gender`, `year-of-born`)
 VALUES
-	(1,'Kamila','Kabanos','kamila@kabanos.pl','Female',2002),
+	(1,'Kamila','Kap','kamila@kap.pl','Female',2002),
 	(2,'Tomasz','Problem','tp@gmail.com','Male',1987),
 	(3,'Ala','Makota','makota@ala.com','Non-binary',2007),
-	(4,'Jakub','Morajda','jm@lol.pl','Male',1969);
+	(4,'Jakub','Kowalski','jk@lol.pl','Male',1968);
 
 /*!40000 ALTER TABLE `accounts` ENABLE KEYS */;
 UNLOCK TABLES;

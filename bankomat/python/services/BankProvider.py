@@ -15,10 +15,10 @@ class BankProvider(dict):
         if BankProvider.__instance__ is None:
             BankProvider.__instance__ = dict.__new__(cls)
             mydb = mysql.connector.connect(
-                host=Config.db.host,
-                user=Config.db.user,
-                password=Config.db.password,
-                database=Config.db.database
+                host=Config['db']['host'],
+                user=Config['db']['user'],
+                password=Config['db']['password'],
+                database=Config['db']['database']
             )
             BankProvider.__instance__.__db = mydb
 

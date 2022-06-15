@@ -1,8 +1,3 @@
-import functools
-
-from Operation import Operation
-from AssignedCards import AssignedCards
-
 class UserAccount():
 
     def __init__(self, data):
