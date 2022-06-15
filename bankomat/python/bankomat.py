@@ -1,4 +1,4 @@
-import datetime 
+import datetime
 
 from Card import Card
 from CashMachine import CashMashine

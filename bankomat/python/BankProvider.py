@@ -3,6 +3,7 @@ import mysql.connector
 
 from Operation import Operation
 from UserAccount import UserAccount
+from bankomat.python.config.BankProviderConfig import BankProviderConfig
 
 class BankProvider(dict):
 
@@ -13,12 +14,7 @@ class BankProvider(dict):
     def __new__(cls, *args, **kwargs):
         if BankProvider.__instance__ is None:
             BankProvider.__instance__ = dict.__new__(cls)
-            mydb = mysql.connector.connect(
-                host="127.0.0.1",
-                user="root",
-                password="root",
-                database="bankomat"
-            )
+            mydb = mysql.connector.connect(BankProviderConfig.db)
             BankProvider.__instance__.__db = mydb
 
         return BankProvider.__instance__
