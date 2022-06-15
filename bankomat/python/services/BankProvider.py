@@ -1,7 +1,5 @@
-import datetime
 import mysql.connector
 
-from models.Operation import Operation
 from models.UserAccount import UserAccount
 from config.Config import Config
 
@@ -25,21 +23,15 @@ class BankProvider(dict):
         return BankProvider.__instance__
 
     def __findAccount(self, number, pin):
-        founded = None
         mycursor = self.__db.cursor(dictionary=True)
-        # TODO fix sql injection
         mycursor.execute('SELECT * FROM cards WHERE cards.number = %s AND cards.pin= %s', (str(number),str(pin)))
         myresult = mycursor.fetchall()
-        print(myresult)
 
         if myresult and myresult[0]:
-            print(myresult[0])
             accountId = myresult[0]["account_id"]
             accCursor = self.__db.cursor(dictionary=True)
-            # TODO fix sql injection
             accCursor.execute('SELECT * FROM accounts WHERE id = %s;', (str(accountId), ))
             accResult = accCursor.fetchall()
-            print(accResult)
         
             account = accResult[0]
 
