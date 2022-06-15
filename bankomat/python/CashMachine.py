@@ -1,6 +1,6 @@
 from BankProvider import BankProvider
 
-class CashMashine():
+class CashMachine():
     def __init__(self, moneyAmount):
 
         self.__moneyAmount = moneyAmount

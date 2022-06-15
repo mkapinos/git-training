@@ -121,7 +121,7 @@ class BankProvider(dict):
         return None
 
 
-class CashMashine():
+class CashMachine():
     def __init__(self, moneyAmount):
 
         self.__moneyAmount = moneyAmount
@@ -196,7 +196,7 @@ class CashMashine():
             else:
                 print("Error: firstly you must insert amount of money you want to withdraw")
 
-atm = CashMashine(10000000000000)
+atm = CashMachine(10000000000000)
 card1 = Card(1001, 12, "Jan", "Kowalski", datetime.datetime.now())
 atm.insertCard(card1)
 atm.insertPin(1234)

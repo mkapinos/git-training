@@ -1,9 +1,9 @@
 import datetime
 
 from Card import Card
-from CashMachine import CashMashine
+from CashMachine import CashMachine
 
-atm = CashMashine(10000000000000)
+atm = CashMachine(10000000000000)
 card1 = Card(1234567890123456, 1234, "Kamila", "Kabanos", datetime.datetime.now())
 atm.insertCard(card1)
 atm.insertPin(5632)
